@@ -844,6 +844,19 @@ LiveChannelStatus AlibabaCloud::OSS::ToLiveChannelStatusType(const char *name)
     else return LiveChannelStatus::UnknownStatus;
 }
 
+const char* AlibabaCloud::OSS::ToRequestPayerName(RequestPayer payer)
+{
+    static const char* PayerName[] = { "NotSet", "BucketOwner", "Requester"};
+    return PayerName[static_cast<int>(payer) - static_cast<int>(RequestPayer::NotSet)];
+}
+
+RequestPayer AlibabaCloud::OSS::ToRequestPayer(const char* name)
+{
+    std::string statusName = ToLower(name);
+    if (!statusName.compare("bucketowner")) return RequestPayer::BucketOwner;
+    else if (!statusName.compare("requester")) return RequestPayer::Requester;
+    else return RequestPayer::NotSet;
+}
 
 
 

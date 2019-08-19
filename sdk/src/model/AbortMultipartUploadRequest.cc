@@ -16,9 +16,7 @@
 
 
 #include <alibabacloud/oss/model/AbortMultipartUploadRequest.h>
-#include <sstream>
 #include "../utils/Utils.h"
-#include "ModelError.h"
 
 using namespace AlibabaCloud::OSS;
 

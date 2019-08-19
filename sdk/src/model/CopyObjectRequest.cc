@@ -81,6 +81,11 @@ void CopyObjectRequest::setTaggingDirective(const CopyActionList& action)
     metaData_.addHeader("x-oss-tagging-directive", ToCopyActionName(action));
 }
 
+void CopyObjectRequest::setTrafficLimit(uint64_t value)
+{
+    metaData_.addHeader("x-oss-traffic-limit", std::to_string(value));
+}
+
 HeaderCollection CopyObjectRequest::specialHeaders() const
 {
     auto headers = metaData_.toHeaderCollection();
@@ -88,6 +93,9 @@ HeaderCollection CopyObjectRequest::specialHeaders() const
     if (headers.find(Http::CONTENT_TYPE) == headers.end()) {
         headers[Http::CONTENT_TYPE] = LookupMimeType(Key());
     }
+
+    auto baseHeaders = OssObjectRequest::specialHeaders();
+    headers.insert(baseHeaders.begin(), baseHeaders.end());
 
     return headers;
 }

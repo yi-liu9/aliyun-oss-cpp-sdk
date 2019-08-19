@@ -30,12 +30,7 @@ namespace OSS
         {
         }
     protected:
-        virtual ParameterCollection specialParameters() const 
-        {
-            ParameterCollection parameter;
-            parameter["objectMeta"] = "";
-            return parameter;
-        }
+        virtual ParameterCollection specialParameters() const;
     };
 } 
 }

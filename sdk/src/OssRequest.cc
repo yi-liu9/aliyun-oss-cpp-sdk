@@ -152,6 +152,21 @@ const std::string& OssObjectRequest::Key() const
     return OssRequest::key();
 }
 
+
+void OssObjectRequest::setRequestPayer(RequestPayer key)
+{
+    requestPayer_ = key;
+}
+
+HeaderCollection OssObjectRequest::specialHeaders() const
+{
+    auto headers = OssRequest::specialHeaders();
+    if (requestPayer_ == RequestPayer::Requester) {
+        headers["x-oss-request-payer"] = ToLower(ToRequestPayerName(RequestPayer::Requester));
+    }
+    return headers;
+}
+
 int OssResumableBaseRequest::validate() const
 {
     if (!IsValidBucketName(Bucket())) {
@@ -238,6 +253,26 @@ void OssResumableBaseRequest::setObjectMtime(const std::string &mtime)
 const std::string& OssResumableBaseRequest::ObjectMtime() const
 {
     return mtime_;
+}
+
+void OssResumableBaseRequest::setRequestPayer(AlibabaCloud::OSS::RequestPayer value)
+{
+    requestPayer_ = value;
+}
+
+AlibabaCloud::OSS::RequestPayer OssResumableBaseRequest::RequestPayer() const
+{
+    return requestPayer_;
+}
+
+void OssResumableBaseRequest::setTrafficLimit(uint64_t value)
+{
+    trafficLimit_ = value;
+}
+
+uint64_t OssResumableBaseRequest::TrafficLimit() const
+{
+    return trafficLimit_;
 }
 
 void LiveChannelRequest::setBucket(const std::string &bucket)

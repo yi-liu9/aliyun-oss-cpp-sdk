@@ -31,7 +31,8 @@ GetObjectRequest::GetObjectRequest(const std::string &bucket, const std::string 
 GetObjectRequest::GetObjectRequest(const std::string &bucket, const std::string &key, const std::string &process) :
     OssObjectRequest(bucket, key),
     rangeIsSet_(false),
-    process_(process)
+    process_(process),
+    trafficLimit_(0)
 {
     setFlags(Flags() | REQUEST_FLAG_CHECK_CRC64);
 }
@@ -47,7 +48,8 @@ GetObjectRequest::GetObjectRequest(const std::string& bucket, const std::string&
     matchingETags_(matchingETags),
     nonmatchingETags_(nonmatchingETags), 
     process_(""),
-    responseHeaderParameters_(responseHeaderParameters_)
+    responseHeaderParameters_(responseHeaderParameters_),
+    trafficLimit_(0)
 {
 }
 
@@ -102,6 +104,10 @@ void GetObjectRequest::addResponseHeaders(RequestResponseHeader header, const st
     responseHeaderParameters_[ResponseHeader[header - RequestResponseHeader::ContentType]] = value;
 }
 
+void GetObjectRequest::setTrafficLimit(uint64_t value)
+{
+    trafficLimit_ = value;
+}
 int GetObjectRequest::validate() const
 {
     int ret = OssObjectRequest::validate();
@@ -116,7 +122,7 @@ int GetObjectRequest::validate() const
 
 HeaderCollection GetObjectRequest::specialHeaders() const
 {
-    HeaderCollection headers;
+    auto headers = OssObjectRequest::specialHeaders();
     if (rangeIsSet_) {
         std::stringstream ss;
         ss << "bytes=" << range_[0] << "-";
@@ -158,6 +164,10 @@ HeaderCollection GetObjectRequest::specialHeaders() const
             first = false;
         }
         headers["If-None-Match"] = ss.str();
+    }
+
+    if (trafficLimit_ != 0) {
+        headers["x-oss-traffic-limit"] = std::to_string(trafficLimit_);
     }
     return headers;
 }

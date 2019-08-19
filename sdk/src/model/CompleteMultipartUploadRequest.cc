@@ -43,6 +43,7 @@ CompleteMultipartUploadRequest::CompleteMultipartUploadRequest(
     uploadId_(uploadId),
     encodingTypeIsSet_(false)
 {
+    setFlags(Flags() | REQUEST_FLAG_CONTENTMD5);
 }
 
 int CompleteMultipartUploadRequest::validate() const
@@ -111,7 +112,10 @@ ParameterCollection CompleteMultipartUploadRequest::specialParameters()const
 
 HeaderCollection CompleteMultipartUploadRequest::specialHeaders() const
 {
-    return metaData_.toHeaderCollection();
+    auto headers = metaData_.toHeaderCollection();
+    auto baseHeaders = OssObjectRequest::specialHeaders();
+    headers.insert(baseHeaders.begin(), baseHeaders.end());
+    return headers;
 }
 
 std::string CompleteMultipartUploadRequest::payload() const

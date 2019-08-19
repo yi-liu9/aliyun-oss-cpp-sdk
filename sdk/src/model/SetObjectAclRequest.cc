@@ -42,7 +42,7 @@ void SetObjectAclRequest::setAcl(CannedAccessControlList acl)
 
 HeaderCollection SetObjectAclRequest::specialHeaders() const
 {
-    HeaderCollection headers;
+    auto headers = OssObjectRequest::specialHeaders();
     if (hasSetAcl_) {
         headers["x-oss-object-acl"] = ToAclName(acl_);
     }

@@ -31,7 +31,8 @@ ListMultipartUploadsRequest::ListMultipartUploadsRequest(const std::string &buck
     prefixIsSet_(false),
     uploadIdMarkerIsSet_(false),
     encodingTypeIsSet_(false),
-    maxUploadsIsSet_(false)
+    maxUploadsIsSet_(false),
+    requestPayer_(RequestPayer::NotSet)
 {
 }
 
@@ -71,6 +72,11 @@ void ListMultipartUploadsRequest::setEncodingType(const std::string &encodingTyp
     encodingTypeIsSet_ = true;
 }
 
+void ListMultipartUploadsRequest::setRequestPayer(RequestPayer value)
+{
+    requestPayer_ = value;
+}
+
 ParameterCollection ListMultipartUploadsRequest::specialParameters() const
 {
     ParameterCollection parameters;
@@ -98,4 +104,13 @@ ParameterCollection ListMultipartUploadsRequest::specialParameters() const
         parameters["encoding-type"] = encodingType_;
     }
     return parameters;
+}
+
+HeaderCollection ListMultipartUploadsRequest::specialHeaders() const
+{
+    HeaderCollection headers;
+    if (requestPayer_ == RequestPayer::Requester) {
+        headers["x-oss-request-payer"] = ToLower(ToRequestPayerName(RequestPayer::Requester));
+    }
+    return headers;
 }

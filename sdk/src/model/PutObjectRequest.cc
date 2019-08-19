@@ -83,6 +83,11 @@ void PutObjectRequest::setTagging(const std::string& value)
     metaData_.addHeader("x-oss-tagging", value);
 }
 
+void PutObjectRequest::setTrafficLimit(uint64_t value)
+{
+    metaData_.addHeader("x-oss-traffic-limit", std::to_string(value));
+}
+
 ObjectMetaData &PutObjectRequest::MetaData()
 {
     return metaData_;
@@ -100,6 +105,9 @@ HeaderCollection PutObjectRequest::specialHeaders() const
     if (headers.find(Http::CONTENT_TYPE) == headers.end()) {
         headers[Http::CONTENT_TYPE] = LookupMimeType(Key());
     }
+
+    auto baseHeaders = OssObjectRequest::specialHeaders();
+    headers.insert(baseHeaders.begin(), baseHeaders.end());
 
     return headers;
 }

@@ -82,7 +82,12 @@ GetObjectOutcome ResumableDownloader::Download()
                     TransferProgress uploadPartProcess = { DownloadPartProcessCallback, (void *)this };
                     getObjectReq.setTransferProgress(uploadPartProcess);
                 }
-
+                if (request_.RequestPayer() == RequestPayer::Requester) {
+                    getObjectReq.setRequestPayer(request_.RequestPayer());
+                }
+                if (request_.TrafficLimit() != 0) {
+                    getObjectReq.setTrafficLimit(request_.TrafficLimit());
+                }
                 auto outcome = client_->GetObject(getObjectReq);
 #ifdef ENABLE_OSS_TEST
                 if (!!(request_.Flags() & 0x40000000) && part.partNumber == 2) {
@@ -167,16 +172,33 @@ GetObjectOutcome ResumableDownloader::Download()
         return a.partNumber < b.partNumber;
     });
 
-    auto meta = outcomes[0].result().Metadata();
+    ObjectMetaData meta;
+    if (outcomes.empty()) {
+        HeadObjectRequest hRequest(request_.Bucket(), request_.Key());
+        if (request_.RequestPayer() == RequestPayer::Requester) {
+            hRequest.setRequestPayer(request_.RequestPayer());
+        }
+        auto hOutcome = client_->HeadObject(hRequest);
+        if (!hOutcome.isSuccess()) {
+            return GetObjectOutcome(hOutcome.error());
+        }
+        meta = hOutcome.result();
+    }
+    else {
+        meta = outcomes[0].result().Metadata();
+    }
     meta.setContentLength(contentLength_);
+
     //check crc and update metadata
     if (!request_.RangeIsSet()) {
-        uint64_t localCRC64 = downloadedParts[0].crc64;
-        for (size_t i = 1; i < downloadedParts.size(); i++) {
-            localCRC64 = CRC64::CombineCRC(localCRC64, downloadedParts[i].crc64, downloadedParts[i].size);
-        }
-        if (localCRC64 != outcomes[0].result().Metadata().CRC64()) {
-            return GetObjectOutcome(OssError("CrcCheckError", "ResumableDownload object CRC checksum fail."));
+        if (client_->configuration().enableCrc64) {
+            uint64_t localCRC64 = downloadedParts[0].crc64;
+            for (size_t i = 1; i < downloadedParts.size(); i++) {
+                localCRC64 = CRC64::CombineCRC(localCRC64, downloadedParts[i].crc64, downloadedParts[i].size);
+            }
+            if (localCRC64 != outcomes[0].result().Metadata().CRC64()) {
+                return GetObjectOutcome(OssError("CrcCheckError", "ResumableDownload object CRC checksum fail."));
+            }
         }
         meta.HttpMetaData().erase(Http::CONTENT_RANGE);
     }

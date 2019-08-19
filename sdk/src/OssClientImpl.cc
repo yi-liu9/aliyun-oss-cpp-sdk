@@ -438,6 +438,31 @@ VoidOutcome OssClientImpl::SetBucketStorageCapacity(const SetBucketStorageCapaci
     }
 }
 
+VoidOutcome OssClientImpl::SetBucketPolicy(const SetBucketPolicyRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Put);
+    if (outcome.isSuccess()) {
+        VoidResult result;
+        result.requestId_ = outcome.result().RequestId();
+        return VoidOutcome(result);
+    }
+    else {
+        return VoidOutcome(outcome.error());
+    }
+}
+VoidOutcome OssClientImpl::SetBucketRequestPayment(const SetBucketRequestPaymentRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Put);
+    if (outcome.isSuccess()) {
+        VoidResult result;
+        result.requestId_ = outcome.result().RequestId();
+        return VoidOutcome(result);
+    }
+    else {
+        return VoidOutcome(outcome.error());
+    }
+}
+
 VoidOutcome OssClientImpl::DeleteBucket(const DeleteBucketRequest &request) const
 {
     auto outcome = MakeRequest(request, Http::Method::Delete);
@@ -491,6 +516,19 @@ VoidOutcome OssClientImpl::DeleteBucketLifecycle(const DeleteBucketLifecycleRequ
 }
 
 VoidOutcome OssClientImpl::DeleteBucketCors(const DeleteBucketCorsRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Delete);
+    if (outcome.isSuccess()) {
+        VoidResult result;
+        result.requestId_ = outcome.result().RequestId();
+        return VoidOutcome(result);
+    }
+    else {
+        return VoidOutcome(outcome.error());
+    }
+}
+
+VoidOutcome OssClientImpl::DeleteBucketPolicy(const DeleteBucketPolicyRequest& request) const
 {
     auto outcome = MakeRequest(request, Http::Method::Delete);
     if (outcome.isSuccess()) {
@@ -654,6 +692,33 @@ GetBucketStorageCapacityOutcome OssClientImpl::GetBucketStorageCapacity(const Ge
     }
     else {
         return GetBucketStorageCapacityOutcome(outcome.error());
+    }
+}
+
+GetBucketPolicyOutcome OssClientImpl::GetBucketPolicy(const GetBucketPolicyRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Get);
+    if (outcome.isSuccess()) {
+        GetBucketPolicyResult result(outcome.result().payload());
+        result.requestId_ = outcome.result().RequestId();
+        return result.ParseDone() ? GetBucketPolicyOutcome(std::move(result)) :
+            GetBucketPolicyOutcome(OssError("ParseXMLError", "Parsing ListObject result fail."));
+    }
+    else {
+        return GetBucketPolicyOutcome(outcome.error());
+    }
+}
+GetBucketPaymentOutcome OssClientImpl::GetBucketRequestPayment(const GetBucketRequestPaymentRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Get);
+    if (outcome.isSuccess()) {
+        GetBucketPaymentResult result(outcome.result().payload());
+        result.requestId_ = outcome.result().RequestId();
+        return result.ParseDone() ? GetBucketPaymentOutcome(std::move(result)) :
+            GetBucketPaymentOutcome(OssError("ParseXMLError", "Parsing GetBucketPayment result fail."));
+    }
+    else {
+        return GetBucketPaymentOutcome(outcome.error());
     }
 }
 
@@ -1091,6 +1156,12 @@ PutObjectOutcome OssClientImpl::ResumableUploadObject(const UploadObjectRequest&
         if (request.TransferProgress().Handler) {
             putObjectReq.setTransferProgress(request.TransferProgress());
         }
+        if (request.RequestPayer() == RequestPayer::Requester) {
+            putObjectReq.setRequestPayer(request.RequestPayer());
+        }
+        if (request.TrafficLimit() != 0) {
+            putObjectReq.setTrafficLimit(request.TrafficLimit());
+        }
         return PutObject(putObjectReq);
     }
     else
@@ -1109,6 +1180,9 @@ CopyObjectOutcome OssClientImpl::ResumableCopyObject(const MultiCopyObjectReques
     }
 
     auto getObjectMetaReq = GetObjectMetaRequest(request.SrcBucket(), request.SrcKey());
+    if (request.RequestPayer() == RequestPayer::Requester) {
+        getObjectMetaReq.setRequestPayer(request.RequestPayer());
+    }
     auto outcome = GetObjectMeta(getObjectMetaReq);
     if (!outcome.isSuccess()) {
         return CopyObjectOutcome(outcome.error());
@@ -1117,6 +1191,12 @@ CopyObjectOutcome OssClientImpl::ResumableCopyObject(const MultiCopyObjectReques
     auto objectSize = outcome.result().ContentLength();
     if (objectSize < (int64_t)request.PartSize()) {
         auto copyObjectReq = CopyObjectRequest(request.Bucket(), request.Key(), request.MetaData());
+        if (request.RequestPayer() == RequestPayer::Requester) {
+            copyObjectReq.setRequestPayer(request.RequestPayer());
+        }
+        if (request.TrafficLimit() != 0) {
+            copyObjectReq.setTrafficLimit(request.TrafficLimit());
+        }
         return CopyObject(copyObjectReq);
     }
 
@@ -1133,6 +1213,9 @@ GetObjectOutcome OssClientImpl::ResumableDownloadObject(const DownloadObjectRequ
     }
 
     auto getObjectMetaReq = GetObjectMetaRequest(request.Bucket(), request.Key());
+    if (request.RequestPayer() == RequestPayer::Requester) {
+        getObjectMetaReq.setRequestPayer(request.RequestPayer());
+    }
     auto outcome = GetObjectMeta(getObjectMetaReq);
     if (!outcome.isSuccess()) {
         return GetObjectOutcome(outcome.error());
@@ -1146,6 +1229,12 @@ GetObjectOutcome OssClientImpl::ResumableDownloadObject(const DownloadObjectRequ
         }
         if (request.TransferProgress().Handler) {
             getObjectReq.setTransferProgress(request.TransferProgress());
+        }
+        if (request.RequestPayer() == RequestPayer::Requester) {
+            getObjectReq.setRequestPayer(request.RequestPayer());
+        }
+        if (request.TrafficLimit() != 0) {
+            getObjectReq.setTrafficLimit(request.TrafficLimit());
         }
         getObjectReq.setResponseStreamFactory([=]() {return std::make_shared<std::fstream>(request.FilePath(), std::ios_base::out | std::ios_base::in | std::ios_base::trunc | std::ios_base::binary); });
         auto outcome = this->GetObject(getObjectReq);

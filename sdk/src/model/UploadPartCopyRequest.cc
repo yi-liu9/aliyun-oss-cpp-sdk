@@ -47,7 +47,8 @@ UploadPartCopyRequest::UploadPartCopyRequest(const std::string &bucket, const st
     sourceIfMatchETagIsSet_(false),
     sourceIfNotMatchETagIsSet_(false),
     sourceIfModifiedSinceIsSet_(false),
-    sourceIfUnModifiedSinceIsSet_(false)
+    sourceIfUnModifiedSinceIsSet_(false),
+    trafficLimit_(0)
 {
 }
 
@@ -63,7 +64,8 @@ UploadPartCopyRequest::UploadPartCopyRequest(const std::string& bucket, const st
     sourceBucket_(srcBucket),
     sourceKey_(srcKey),
     partNumber_(partNumber),
-    sourceRangeIsSet_(false)
+    sourceRangeIsSet_(false),
+    trafficLimit_(0)
 {
     if (!sourceIfMatchETag.empty()) {
         sourceIfMatchETag_ = sourceIfMatchETag;
@@ -145,6 +147,10 @@ void UploadPartCopyRequest::SetSourceIfUnModifiedSince(const std::string& value)
     sourceIfUnModifiedSinceIsSet_ = true;
 }
 
+void UploadPartCopyRequest::setTrafficLimit(uint64_t value)
+{
+    trafficLimit_ = value;
+}
 ParameterCollection UploadPartCopyRequest::specialParameters() const
 {
     ParameterCollection parameters;
@@ -155,10 +161,10 @@ ParameterCollection UploadPartCopyRequest::specialParameters() const
 
 HeaderCollection UploadPartCopyRequest::specialHeaders() const
 {
-    HeaderCollection header;
+    auto headers = OssObjectRequest::specialHeaders();
     std::string source;
     source.append("/").append(sourceBucket_).append("/").append(UrlEncode(sourceKey_));
-    header["x-oss-copy-source"] = source;
+    headers["x-oss-copy-source"] = source;
 
     if (sourceRangeIsSet_) {
         std::string range("bytes=");
@@ -166,26 +172,30 @@ HeaderCollection UploadPartCopyRequest::specialHeaders() const
         if (sourceRange_[1] > 0){
             range.append(std::to_string(sourceRange_[1]));
         }
-        header["x-oss-copy-source-range"] = range;
+        headers["x-oss-copy-source-range"] = range;
     }
 
     if(sourceIfMatchETagIsSet_) {
-        header["x-oss-copy-source-if-match"] = sourceIfMatchETag_;
+        headers["x-oss-copy-source-if-match"] = sourceIfMatchETag_;
     }
 
     if(sourceIfNotMatchETagIsSet_) {
-        header["x-oss-copy-source-if-none-match"] = sourceIfNotMatchETag_;
+        headers["x-oss-copy-source-if-none-match"] = sourceIfNotMatchETag_;
     }
 
     if(sourceIfModifiedSinceIsSet_) {
-        header["x-oss-copy-source-if-modified-since"] = sourceIfModifiedSince_;
+        headers["x-oss-copy-source-if-modified-since"] = sourceIfModifiedSince_;
     }
 
     if (sourceIfUnModifiedSinceIsSet_) {
-        header["x-oss-copy-source-if-unmodified-since"] = sourceIfUnModifiedSince_;
+        headers["x-oss-copy-source-if-unmodified-since"] = sourceIfUnModifiedSince_;
     }
 
-    return header;
+    if (trafficLimit_ != 0) {
+        headers["x-oss-traffic-limit"] = std::to_string(trafficLimit_);
+    }
+
+    return headers;
 }
 
 int UploadPartCopyRequest::validate() const

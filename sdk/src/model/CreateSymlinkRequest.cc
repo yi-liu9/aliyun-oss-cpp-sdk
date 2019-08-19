@@ -44,7 +44,10 @@ void CreateSymlinkRequest::setTagging(const std::string& value)
 
 HeaderCollection CreateSymlinkRequest::specialHeaders() const
 {
-    return metaData_.toHeaderCollection();
+	auto headers = metaData_.toHeaderCollection();
+    auto baseHeaders = OssObjectRequest::specialHeaders();
+    headers.insert(baseHeaders.begin(), baseHeaders.end());
+    return headers;
 }
 
 
