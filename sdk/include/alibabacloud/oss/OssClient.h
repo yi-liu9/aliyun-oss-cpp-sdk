@@ -84,6 +84,7 @@ namespace OSS
         /*Service*/
         ListBucketsOutcome ListBuckets() const;
         ListBucketsOutcome ListBuckets(const ListBucketsRequest& request) const;
+        ListBucketInventoryConfigurationOutcome ListBucketInventoryConfiguration(const ListBucketInventoryConfigurationRequest& request) const;
 
         /*Bucket*/
         CreateBucketOutcome CreateBucket(const std::string& bucket, StorageClass storageClass = StorageClass::Standard) const;
@@ -113,6 +114,7 @@ namespace OSS
         VoidOutcome SetBucketEncryption(const SetBucketEncryptionRequest& request) const;
         VoidOutcome SetBucketTagging(const SetBucketTaggingRequest& request) const;
         VoidOutcome SetBucketQosInfo(const SetBucketQosInfoRequest& request) const;
+        VoidOutcome SetBucketInventoryConfiguration(const SetBucketInventoryConfigurationRequest& request) const;
 
         VoidOutcome DeleteBucket(const std::string& bucket) const;
         VoidOutcome DeleteBucket(const DeleteBucketRequest& request) const;
@@ -128,6 +130,7 @@ namespace OSS
         VoidOutcome DeleteBucketEncryption(const DeleteBucketEncryptionRequest& request) const;
         VoidOutcome DeleteBucketTagging(const DeleteBucketTaggingRequest& request) const;
         VoidOutcome DeleteBucketQosInfo(const DeleteBucketQosInfoRequest& request) const;
+        VoidOutcome DeleteBucketInventoryConfiguration(const DeleteBucketInventoryConfigurationRequest& request) const;
 
         GetBucketAclOutcome GetBucketAcl(const std::string& bucket) const;
         GetBucketAclOutcome GetBucketAcl(const GetBucketAclRequest& request) const;
@@ -155,6 +158,7 @@ namespace OSS
         GetBucketTaggingOutcome GetBucketTagging(const GetBucketTaggingRequest& request) const;
         GetBucketQosInfoOutcome GetBucketQosInfo(const GetBucketQosInfoRequest& request) const;
         GetUserQosInfoOutcome GetUserQosInfo(const GetUserQosInfoRequest& request) const;
+        GetBucketInventoryConfigurationcome GetBucketInventoryConfiguration(const GetBucketInventoryConfigurationRequest& request) const;
 
         /*Object*/
         GetObjectOutcome GetObject(const std::string& bucket, const std::string& key) const;

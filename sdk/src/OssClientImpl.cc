@@ -500,6 +500,20 @@ VoidOutcome OssClientImpl::SetBucketQosInfo(const SetBucketQosInfoRequest& reque
         return VoidOutcome(outcome.error());
     }
 }
+
+VoidOutcome OssClientImpl::SetBucketInventoryConfiguration(const SetBucketInventoryConfigurationRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Put);
+    if (outcome.isSuccess()) {
+        VoidResult result;
+        result.requestId_ = outcome.result().RequestId();
+        return VoidOutcome(result);
+    }
+    else {
+        return VoidOutcome(outcome.error());
+    }
+}
+
 VoidOutcome OssClientImpl::DeleteBucket(const DeleteBucketRequest &request) const
 {
     auto outcome = MakeRequest(request, Http::Method::Delete);
@@ -605,6 +619,19 @@ VoidOutcome OssClientImpl::DeleteBucketTagging(const DeleteBucketTaggingRequest&
 }
 
 VoidOutcome OssClientImpl::DeleteBucketQosInfo(const DeleteBucketQosInfoRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Delete);
+    if (outcome.isSuccess()) {
+        VoidResult result;
+        result.requestId_ = outcome.result().RequestId();
+        return VoidOutcome(result);
+    }
+    else {
+        return VoidOutcome(outcome.error());
+    }
+}
+
+VoidOutcome OssClientImpl::DeleteBucketInventoryConfiguration(const DeleteBucketInventoryConfigurationRequest& request) const
 {
     auto outcome = MakeRequest(request, Http::Method::Delete);
     if (outcome.isSuccess()) {
@@ -851,6 +878,34 @@ GetUserQosInfoOutcome OssClientImpl::GetUserQosInfo(const GetUserQosInfoRequest&
     }
     else {
         return GetUserQosInfoOutcome(outcome.error());
+    }
+}
+
+GetBucketInventoryConfigurationcome OssClientImpl::GetBucketInventoryConfiguration(const GetBucketInventoryConfigurationRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Get);
+    if (outcome.isSuccess()) {
+        GetBucketInventoryConfigurationResult result(outcome.result().payload());
+        result.requestId_ = outcome.result().RequestId();
+        return result.ParseDone() ? GetBucketInventoryConfigurationcome(std::move(result)) :
+            GetBucketInventoryConfigurationcome(OssError("ParseXMLError", "Parsing GetBucketInventoryConfiguration result fail."));
+    }
+    else {
+        return GetBucketInventoryConfigurationcome(outcome.error());
+    }
+}
+
+ListBucketInventoryConfigurationOutcome OssClientImpl::ListBucketInventoryConfiguration(const ListBucketInventoryConfigurationRequest& request) const
+{
+    auto outcome = MakeRequest(request, Http::Method::Get);
+    if (outcome.isSuccess()) {
+        ListBucketInventoryConfigurationResult result(outcome.result().payload());
+        result.requestId_ = outcome.result().RequestId();
+        return result.ParseDone() ? ListBucketInventoryConfigurationOutcome(std::move(result)) :
+            ListBucketInventoryConfigurationOutcome(OssError("ParseXMLError", "Parsing ListBucketInventoryConfiguration result fail."));
+    }
+    else {
+        return ListBucketInventoryConfigurationOutcome(outcome.error());
     }
 }
 

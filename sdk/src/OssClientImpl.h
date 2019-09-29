@@ -57,7 +57,8 @@ namespace OSS
         VoidOutcome SetBucketEncryption(const SetBucketEncryptionRequest& request) const;
         VoidOutcome SetBucketTagging(const SetBucketTaggingRequest& request) const;
         VoidOutcome SetBucketQosInfo(const SetBucketQosInfoRequest& request) const;
-
+        VoidOutcome SetBucketInventoryConfiguration(const SetBucketInventoryConfigurationRequest& request) const;
+        
         VoidOutcome DeleteBucket(const DeleteBucketRequest &request) const;
         VoidOutcome DeleteBucketLogging(const DeleteBucketLoggingRequest& request) const;
         VoidOutcome DeleteBucketWebsite(const DeleteBucketWebsiteRequest& request) const;
@@ -67,6 +68,7 @@ namespace OSS
         VoidOutcome DeleteBucketEncryption(const DeleteBucketEncryptionRequest& request) const;
         VoidOutcome DeleteBucketTagging(const DeleteBucketTaggingRequest& request) const;
         VoidOutcome DeleteBucketQosInfo(const DeleteBucketQosInfoRequest& request) const;
+        VoidOutcome DeleteBucketInventoryConfiguration(const DeleteBucketInventoryConfigurationRequest& request) const;
 
         ListObjectOutcome ListObjects(const ListObjectsRequest &request) const;
 
@@ -86,6 +88,8 @@ namespace OSS
         GetBucketTaggingOutcome GetBucketTagging(const GetBucketTaggingRequest& request) const;
         GetBucketQosInfoOutcome GetBucketQosInfo(const GetBucketQosInfoRequest& request) const;
         GetUserQosInfoOutcome GetUserQosInfo(const GetUserQosInfoRequest& request) const;
+        GetBucketInventoryConfigurationcome GetBucketInventoryConfiguration(const GetBucketInventoryConfigurationRequest& request) const;
+        ListBucketInventoryConfigurationOutcome ListBucketInventoryConfiguration(const ListBucketInventoryConfigurationRequest& request) const;
 
         /*Object*/
         GetObjectOutcome GetObject(const GetObjectRequest &request) const;
